@@ -1,0 +1,24 @@
+sudo: required
+
+language: bash
+
+env:
+  - ARCH=amd64
+#  - ARCH=armhf
+
+services:
+  - docker
+
+before_install:
+  - ./travis-build-and-run.sh
+
+script:
+  - export TEST_HOST=127.0.0.1 && ./test.sh
+
+# Automatic deployment does not work for armhf build (chroot is required)
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+    docker push syphr/jasper:$ARCH;
+    fi
+

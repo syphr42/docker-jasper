@@ -1,0 +1,40 @@
+# This image creates a Jasper voice automation client
+
+# When running a container created from this image, you should mount 
+# /jasper/config to a volume to preserve configuration between
+# executions.
+
+FROM armv7/armhf-debian
+MAINTAINER Gregory Moyer <moyerg@syphr.com>
+
+# install standard runtime dependencies
+RUN apt-get update && \
+    apt-get install -y \
+		python \
+		pocketsphinx \
+                libttspico-utils \
+	--no-install-recommends && \
+    rm -r /var/lib/apt/lists/*
+
+# install experimental runtime dependencies
+RUN echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list && \
+    apt-get update && \
+    apt-get -t experimental install -y \
+                phonetisaurus \
+                m2m-aligner \
+                mitlm \
+                libfst-tools \
+        --no-install-recommends && \
+    rm -r /var/lib/apt/lists/* && \
+    rm /etc/apt/sources.list.d/experimental.list
+
+# copy install script into the container
+COPY ./install-jasper.sh .
+
+# download and install jasper package
+RUN ./install-jasper.sh
+
+# set the configuration directory
+ENV JASPER_CONFIG /jasper/config
+
+CMD ["/jasper/jasper.py"]
