@@ -4,17 +4,23 @@
 # /jasper/config to a volume to preserve configuration between
 # executions.
 
-FROM armv7/armhf-debian
-MAINTAINER Gregory Moyer <moyerg@syphr.com>
+# Standard out and error are redirected to /jasper/logs/jasper.log
 
-# install standard runtime dependencies
-RUN apt-get update && \
-    apt-get install -y \
-		python \
-		pocketsphinx \
-                libttspico-utils \
-	--no-install-recommends && \
-    rm -r /var/lib/apt/lists/*
+# This image configures ALSA to use card0,device0 for capture
+# and card1,device0 for playback. This matches what the Jasper code
+# expects. Because of this, you might need to remap your sound 
+# devices as volumes when you create a container from this image.
+
+FROM armv7/armhf-debian
+
+# install testing runtime dependencies
+RUN echo 'deb http://ftp.debian.org/debian stretch main contrib non-free' > /etc/apt/sources.list.d/stretch.list && \
+    apt-get update && \
+    apt-get -t stretch install -y \
+                libfst-tools \
+        --no-install-recommends && \
+    rm -r /var/lib/apt/lists/* && \
+    rm /etc/apt/sources.list.d/stretch.list
 
 # install experimental runtime dependencies
 RUN echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' > /etc/apt/sources.list.d/experimental.list && \
@@ -23,10 +29,30 @@ RUN echo 'deb http://ftp.debian.org/debian experimental main contrib non-free' >
                 phonetisaurus \
                 m2m-aligner \
                 mitlm \
-                libfst-tools \
         --no-install-recommends && \
     rm -r /var/lib/apt/lists/* && \
     rm /etc/apt/sources.list.d/experimental.list
+
+# add non-free repository for standard dependencies
+RUN sed -i "s/jessie main/jessie main contrib non-free/" /etc/apt/sources.list
+
+# install standard runtime dependencies
+RUN apt-get update && \
+    apt-get install -y \
+                bison \
+                ca-certificates \
+                curl \
+                libasound2-dev \
+                libttspico-utils \
+                pocketsphinx \
+                pocketsphinx-hmm-en-hub4wsj \
+                python \
+                python-numpy \
+                python-pip \
+                python-pyaudio \
+                python-yaml \
+        --no-install-recommends && \
+    rm -r /var/lib/apt/lists/*
 
 # copy install script into the container
 COPY ./install-jasper.sh .
@@ -34,7 +60,17 @@ COPY ./install-jasper.sh .
 # download and install jasper package
 RUN ./install-jasper.sh
 
+# configure alsa
+RUN echo "options snd-usb-audio index=0" >> /etc/modprobe.d/alsa-base.conf
+COPY ./asound.conf /etc/
+
+# setup phonetisaurus model
+RUN mkdir /jasper/phonetisaurus && \
+    curl -sSL https://www.dropbox.com/s/kfht75czdwucni1/g014b2b.tgz | tar -zx --directory /jasper/phonetisaurus && \
+    cd /jasper/phonetisaurus/g014b2b && \
+    ./compile-fst.sh
+
 # set the configuration directory
 ENV JASPER_CONFIG /jasper/config
 
-CMD ["/jasper/jasper.py"]
+CMD "/jasper/jasper.py >> /jasper/logs/jasper.log 2>&1"

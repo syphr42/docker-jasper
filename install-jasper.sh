@@ -3,6 +3,7 @@
 set -xe && \
 buildDeps=" \
            git-core \
+           python-dev \
           " && \
 apt-get update && \
 apt-get install -y $buildDeps --no-install-recommends && \
