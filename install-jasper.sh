@@ -4,6 +4,7 @@ set -xe && \
 buildDeps=" \
            git-core \
            python-dev \
+           python-setuptools \
            subversion \
            autoconf \
            libtool \
