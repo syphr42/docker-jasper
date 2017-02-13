@@ -39,6 +39,7 @@ RUN sed -i "s/jessie main/jessie main contrib non-free/" /etc/apt/sources.list
 # install standard runtime dependencies
 RUN apt-get update && \
     apt-get install -y \
+                alsa-utils \
                 bison \
                 ca-certificates \
                 curl \
@@ -48,7 +49,7 @@ RUN apt-get update && \
                 pocketsphinx-hmm-en-hub4wsj \
                 python \
                 python-numpy \
-                python-pip \
+                python-pocketsphinx \
                 python-pyaudio \
                 python-yaml \
         --no-install-recommends && \
@@ -70,7 +71,9 @@ RUN mkdir /jasper/phonetisaurus && \
     cd /jasper/phonetisaurus/g014b2b && \
     ./compile-fst.sh
 
-# set the configuration directory
+# setup the environment
 ENV JASPER_CONFIG /jasper/config
+ENV LD_LIBRARY_PATH /usr/local/lib
+ENV PATH $PATH:/usr/local/lib/
 
 CMD "/jasper/jasper.py >> /jasper/logs/jasper.log 2>&1"
