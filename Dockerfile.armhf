@@ -20,7 +20,17 @@
 #  /dev/snd/pcmC1D0p
 #  /dev/snd/controlC1
 
-FROM armv7/armhf-debian
+FROM multiarch/debian-debootstrap:armhf-jessie
+
+# jasper code repository
+ARG JASPER_GIT_URL=https://github.com/jasperproject/jasper-client.git
+
+# setup the environment
+ENV JASPER_GIT_URL=${JASPER_GIT_URL} \
+    JASPER_DIR=/jasper \
+    JASPER_CONFIG=/jasper/config \
+    LD_LIBRARY_PATH=/usr/local/lib \
+    PATH=$PATH:/usr/local/lib/
 
 # install testing runtime dependencies
 RUN echo 'deb http://ftp.debian.org/debian stretch main contrib non-free' > /etc/apt/sources.list.d/stretch.list && \
@@ -64,24 +74,21 @@ RUN apt-get update && \
         --no-install-recommends && \
     rm -r /var/lib/apt/lists/*
 
-# copy install script into the container
-COPY ./install-jasper.sh .
-
-# download and install jasper package
-RUN ./install-jasper.sh
-
-# setup phonetisaurus model
-RUN mkdir /jasper/phonetisaurus && \
-    curl -sSL https://www.dropbox.com/s/kfht75czdwucni1/g014b2b.tgz | tar -zx --directory /jasper/phonetisaurus && \
-    cd /jasper/phonetisaurus/g014b2b && \
-    ./compile-fst.sh
+# install jasper and build its dependencies that aren't packaged
+COPY ./install-jasper.sh /
+RUN /install-jasper.sh
 
 # configure alsa
 COPY ./asound.conf /etc/
 
-# setup the environment
-ENV JASPER_CONFIG=/jasper/config \
-    LD_LIBRARY_PATH=/usr/local/lib \
-    PATH=$PATH:/usr/local/lib/
+# move to jasper directory
+WORKDIR ${JASPER_DIR}
 
-CMD ["/jasper/jasper.py"]
+# expose configuration directory
+VOLUME ${JASPER_CONFIG}
+
+# install entrypoint script
+COPY ./entrypoint.sh /
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["./jasper.py"]
