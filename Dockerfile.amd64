@@ -20,7 +20,7 @@
 #  /dev/snd/pcmC1D0p
 #  /dev/snd/controlC1
 
-FROM multiarch/debian-debootstrap:armhf-jessie
+FROM debian:jessie
 
 # jasper code repository
 ARG JASPER_GIT_URL=https://github.com/jasperproject/jasper-client.git
