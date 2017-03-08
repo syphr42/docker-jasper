@@ -37,6 +37,11 @@ RUN echo 'deb http://ftp.debian.org/debian stretch main contrib non-free' > /etc
     apt-get update && \
     apt-get -t stretch install -y \
                 libfst-tools \
+                libc6 \
+                gfortran \
+                g++ \
+                libtool \
+                python-dev \
         --no-install-recommends && \
     rm -r /var/lib/apt/lists/* && \
     rm /etc/apt/sources.list.d/stretch.list
