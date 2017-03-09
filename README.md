@@ -51,7 +51,7 @@ The simplest way to start is with the following command:
 
 ```bash
 docker run \
-    -it
+    -it \
     --name jasper \
     --privileged \
     --volume /dev/snd/pcmC0D0p:/dev/snd/pcmC1D0p \
