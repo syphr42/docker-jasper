@@ -1,6 +1,9 @@
+[![Build Status](https://travis-ci.org/syphr42/docker-jasper.svg?branch=master)](https://travis-ci.org/syphr42/docker-jasper)
+
 # Supported tags and respective `Dockerfile` links
 
 - [`armhf` (*Dockerfile*)](https://github.com/syphr42/docker-jasper/blob/master/Dockerfile.armhf)
+- [`amd64` (*Dockerfile*)](https://github.com/syphr42/docker-jasper/blob/master/Dockerfile.amd64)
 
 
 Table of Contents
