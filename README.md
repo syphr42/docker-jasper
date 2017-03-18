@@ -67,7 +67,7 @@ docker run \
 
 Let's take a look at each argument to ``docker run``:
 
-``--it``
+``-it``
 This tells Docker to run in interactive mode and assign a console. This is required only if you want to run the profile setup wizard when the container first starts. The wizard will run only if no profile.yml exists.
 
 ``--privileged``
